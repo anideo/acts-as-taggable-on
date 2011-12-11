@@ -18,6 +18,8 @@ require "acts_as_taggable_on/tag_list"
 require "acts_as_taggable_on/tags_helper"
 require "acts_as_taggable_on/tagging"
 
+RAILS_3 = ActiveRecord::VERSION::MAJOR >= 3
+
 $LOAD_PATH.shift
 
 if defined?(ActiveRecord::Base)

@@ -28,11 +28,20 @@ module ActsAsTaggableOn
       tag_types = tag_types.to_a.flatten.compact.map(&:to_sym)
 
       if taggable?
-        write_inheritable_attribute(:tag_types, (self.tag_types + tag_types).uniq)
+        if RAILS_3
+          self.tag_types = (self.tag_types + tag_types).uniq
+        else
+          write_inheritable_attribute(:tag_types, (self.tag_types + tag_types).uniq)
+        end
       else
-        write_inheritable_attribute(:tag_types, tag_types)
-        class_inheritable_reader(:tag_types)
-        
+        if RAILS_3
+          class_attribute :tag_types
+          self.tag_types = tag_types
+        else
+          write_inheritable_attribute(:tag_types, tag_types)
+          class_inheritable_reader(:tag_types)
+        end
+
         class_eval do
           has_many :taggings, :as => :taggable, :dependent => :destroy, :include => :tag, :class_name => "ActsAsTaggableOn::Tagging"
           has_many :base_tags, :through => :taggings, :source => :tag, :class_name => "ActsAsTaggableOn::Tag"
@@ -40,7 +49,7 @@ module ActsAsTaggableOn
           def self.taggable?
             true
           end
-        
+
           include ActsAsTaggableOn::Taggable::Core
           include ActsAsTaggableOn::Taggable::Collection
           include ActsAsTaggableOn::Taggable::Cache
